@@ -130,8 +130,29 @@
       <div class="form-group" style="flex: 1;">
         <label>■ 귀걸이</label>
         <select id="earrings" required>
-          <option value="">선택하세요</option>
-        </select>
+        <option value="">선택하세요</option>
+        <option value="00">00. 팔찌</option>
+        <option value="01">01. 쁘띠</option>
+        <option value="02">02. 레이어</option>
+        <option value="03">03. 하트하트</option>
+        <option value="04">04. 미들</option>
+        <option value="05">05. 스포츠</option>
+        <option value="06">06. 클래식</option>
+        <option value="07">07. 테슬</option>
+        <option value="08">08. 스테디</option>
+        <option value="09">09. 그랑프리</option>
+        <option value="10">10. 그레이스</option>
+        <option value="11">11. 다이아퀸</option>
+        <option value="12">12. 디바</option>
+        <option value="13">13. 아일릿</option>
+        <option value="14">14. 릴리</option>
+        <option value="15">15. 카리나</option>
+        <option value="16">16. 아이유</option>
+        <option value="17">17. 비치바디</option>
+        <option value="18">18. 모던키니</option>
+        <option value="19">19. 에스파</option>
+          <option value="34">34. 티아라</option>
+      </select>
       </div>
 
       <div class="form-group" style="flex: 1;">
@@ -231,43 +252,21 @@
       return parts.join("/");
     }
 
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-    import { getFirestore, doc, setDoc, collection, getDocs, getDoc } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+    // Firebase 설정
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+    import { getFirestore, doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
     const firebaseConfig = {
-      apiKey: "AIzaSyAyP5QTMzBtz8lMEzkE4C66CjFbZ3a17QM",
-      authDomain: "bodystar-1b77d.firebaseapp.com",
-      projectId: "bodystar-1b77d",
-      storageBucket: "bodystar-1b77d.appspot.com",
-      messagingSenderId: "1011822927832",
-      appId: "1:1011822927832:web:87f0d859b3baf1d8e21cad"
+      apiKey: "AizaSyAxfXZ7fOgO4ZxffXp4fsAjAcTmMQrwuQ",
+      authDomain: "fitgirlviki.firebaseapp.com",
+      projectId: "fitgirlviki",
+      storageBucket: "fitgirlviki.firebasestorage.app",
+      messagingSenderId: "207468197936",
+      appId: "1:207468197936:web:70ea3baa845e403722555f5"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-
-    async function loadEarringOptions() {
-        try {
-            const productDocRef = doc(db, "AdminSettings", "productlist");
-            const productDocSnap = await getDoc(productDocRef);
-            const earringSelect = document.getElementById('earrings');
-            
-            if (productDocSnap.exists()) {
-                const earringData = productDocSnap.data();
-                Object.entries(earringData).forEach(([id, name]) => {
-                    const option = document.createElement('option');
-                    option.value = id;
-                    option.text = name;
-                    earringSelect.appendChild(option);
-                });
-            }
-        } catch (error) {
-            console.error("귀걸이 옵션 로딩 오류:", error);
-        }
-    }
-
-    loadEarringOptions();
-
 
     document.getElementById('orderForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -335,7 +334,7 @@
           created_at: today.toISOString()
         });
         alert('주문이 저장되었습니다.');
-
+        
         // Disable submit button after successful save
         const saveButton = document.querySelector('button[type="submit"]');
         saveButton.disabled = true;

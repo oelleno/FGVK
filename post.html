@@ -188,7 +188,8 @@ ${customerData["01_고객명"]}님의 상품이 택배사로 전달되었습니�
     document.getElementById('deliveryDate').addEventListener('input', updatePreview);
 
 
-    window.searchByName = async () => {
+    async function searchByName() {
+      window.searchByName = searchByName;
       const name = document.getElementById('customerName').value;
       if (!name) return;
 

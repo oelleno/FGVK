@@ -1,0 +1,67 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>주문 관리 시스템</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background: #ffffff;
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      width: 100%;
+    }
+
+    .logo {
+      width: 200px;
+      margin: 20px 0;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 15px;
+      border-radius: 10px;
+      border: none;
+      background: #FF7BA9;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="pink_transparent.png" alt="로고" class="logo">
+    <button class="btn" onclick="location.href='order.html'">주문완료</button>
+    <button class="btn" onclick="location.href='post.html'">상품발송</button>
+    <button class="btn" onclick="location.href='review.html'">포토후기</button>
+  </div>
+</body>
+</html>

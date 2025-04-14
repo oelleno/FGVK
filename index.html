@@ -1,8 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="pink_transparent.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>주문 관리 시스템</title>
   <style>
@@ -63,5 +63,24 @@
     <button class="btn" onclick="location.href='post.html'">상품발송</button>
     <button class="btn" onclick="location.href='review.html'">포토후기</button>
   </div>
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+  import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey: "AizaSyAxfXZ7fOgO4ZxffXp4fsAjAcTmMQrwuQ",
+    authDomain: "fitgirlviki.firebaseapp.com",
+    projectId: "fitgirlviki",
+    storageBucket: "fitgirlviki.firebasestorage.app",
+    messagingSenderId: "207468197936",
+    appId: "1:207468197936:web:70ea3baa845e403722555f5"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window.app = app;
+  window.db = db;
+</script>
 </body>
 </html>

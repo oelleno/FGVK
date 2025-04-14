@@ -1,3 +1,5 @@
+import { doc, updateDoc } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+
 function updatePreview() {
   const customerName = document.getElementById('customerName').value;
   const productName = window.getFormattedProductName();
@@ -35,6 +37,8 @@ document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
 });
 
 async function sendKakaoMessage() {
+  const db = window.db;
+  const docId = window.docId;
   const customerName = document.getElementById('customerName').value;
   const phone = document.getElementById('phone').value;
   const productName = window.getFormattedProductName();
@@ -100,6 +104,21 @@ ${customerName}님의 반짝이는 무대를 책임질 주문이 접수되었습
 
   const data = await response.json();
   if (data.code === 0) {
+    // Update Firestore with the current timestamp
+    const earringSelect = document.getElementById('earrings');
+    const selectedOption = earringSelect.options[earringSelect.selectedIndex].text;
+    const docRef = doc(db, selectedOption, docId);
+    await updateDoc(docRef, {
+      "10_알림톡.1_주문완료안내": new Date().toLocaleString('ko-KR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      }).replace(/\. /g, '-').replace('.', '')
+    });
+
     window.dispatchEvent(new Event('kakaoSendSuccess'));
     // Disable kakao button after successful send
     const kakaoButton = document.getElementById('sendKakao');

@@ -143,9 +143,9 @@
   </form>
 
   <script type="module">
-    import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-    import {getFirestore, collection, query, where, getDocs, doc, updateDoc, getDoc, getDocsFromCache} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+    import { getFirestore, collection, query, where, getDocs, doc, updateDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+    
     const firebaseConfig = {
       apiKey: "AizaSyAxfXZ7fOgO4ZxffXp4fsAjAcTmMQrwuQ",
       authDomain: "fitgirlviki.firebaseapp.com",
@@ -188,13 +188,14 @@ ${customerData["01_고객명"]}님의 상품이 택배사로 전달되었습니�
     document.getElementById('deliveryDate').addEventListener('input', updatePreview);
 
 
-    async function searchByName() {
-      window.searchByName = searchByName;
+    window.searchByName = async () => {
       const name = document.getElementById('customerName').value;
       if (!name) return;
 
       try {
-        const collections = ["00. 팔찌", "01. 쁘띠", "02. 레이어", "03. 하트하트", "04. 미들", "05. 스포츠", "06. 클래식", "07. 테슬", "08. 스테디", "09. 그랑프리", "10. 그레이스", "11. 다이아퀸", "12. 디바", "13. 아일릿", "14. 릴리", "15. 카리나", "16. 아이유", "17. 비치바디", "18. 모던키니", "19. 에스파", "34. 티아라"];
+        const productDocRef = doc(db, "AdminSettings", "productlist");
+        const productDocSnap = await getDoc(productDocRef);
+        const collections = productDocSnap.exists() ? Object.values(productDocSnap.data().earing || {}) : [];
         let matches = [];
 
         for (const colName of collections) {
@@ -237,7 +238,9 @@ ${customerData["01_고객명"]}님의 상품이 택배사로 전달되었습니�
       if (!phone) return;
 
       try {
-        const collections = ["00. 팔찌", "01. 쁘띠", "02. 레이어", "03. 하트하트", "04. 미들", "05. 스포츠", "06. 클래식", "07. 테슬", "08. 스테디", "09. 그랑프리", "10. 그레이스", "11. 다이아퀸", "12. 디바", "13. 아일릿", "14. 릴리", "15. 카리나", "16. 아이유", "17. 비치바디", "18. 모던키니", "19. 에스파", "34. 티아라"];
+        const productDocRef = doc(db, "AdminSettings", "productlist");
+        const productDocSnap = await getDoc(productDocRef);
+        const collections = productDocSnap.exists() ? Object.values(productDocSnap.data().earing || {}) : [];
         let match = null;
 
         for (const colName of collections) {
@@ -276,7 +279,9 @@ ${customerData["01_고객명"]}님의 상품이 택배사로 전달되었습니�
 
       const trackingNumber = document.getElementById('trackingNumber').value;
       try {
-        const collections = ["00. 팔찌", "01. 쁘띠", "02. 레이어", "03. 하트하트", "04. 미들", "05. 스포츠", "06. 클래식", "07. 테슬", "08. 스테디", "09. 그랑프리", "10. 그레이스", "11. 다이아퀸", "12. 디바", "13. 아일릿", "14. 릴리", "15. 카리나", "16. 아이유", "17. 비치바디", "18. 모던키니", "19. 에스파", "34. 티아라"];
+        const productDocRef = doc(db, "AdminSettings", "productlist");
+        const productDocSnap = await getDoc(productDocRef);
+        const collections = productDocSnap.exists() ? Object.values(productDocSnap.data().earing || {}) : [];
 
         let docRef;
         let found = false;

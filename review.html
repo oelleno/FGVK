@@ -116,20 +116,9 @@
   </form>
 
   <script type="module">
-    import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-    import {getFirestore, collection, query, where, getDocs, doc, updateDoc, getDoc} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-
-    const firebaseConfig = {
-      apiKey: "AizaSyAxfXZ7fOgO4ZxffXp4fsAjAcTmMQrwuQ",
-      authDomain: "fitgirlviki.firebaseapp.com",
-      projectId: "fitgirlviki",
-      storageBucket: "fitgirlviki.firebasestorage.app",
-      messagingSenderId: "207468197936",
-      appId: "1:207468197936:web:70ea3baa845e403722555f5"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    import {collection, query, where, getDocs, doc, updateDoc, getDoc} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+    
+    const db = window.db;
     let currentDocId = null;
     let customerData = null;
 
@@ -156,7 +145,9 @@
       if (!name) return;
 
       try {
-        const collections = ["00. 팔찌", "01. 쁘띠", "02. 레이어", "03. 하트하트", "04. 미들", "05. 스포츠", "06. 클래식", "07. 테슬", "08. 스테디", "09. 그랑프리", "10. 그레이스", "11. 다이아퀸", "12. 디바", "13. 아일릿", "14. 릴리", "15. 카리나", "16. 아이유", "17. 비치바디", "18. 모던키니", "19. 에스파", "34. 티아라"];
+        const productDocRef = doc(db, "AdminSettings", "productlist");
+        const productDocSnap = await getDoc(productDocRef);
+        const collections = productDocSnap.exists() ? Object.values(productDocSnap.data().earing || {}) : [];
         let matches = [];
 
         for (const colName of collections) {
@@ -247,7 +238,9 @@
 
         const data = await response.json();
         if (data.code === 0) {
-          const collections = ["00. 팔찌", "01. 쁘띠", "02. 레이어", "03. 하트하트", "04. 미들", "05. 스포츠", "06. 클래식", "07. 테슬", "08. 스테디", "09. 그랑프리", "10. 그레이스", "11. 다이아퀸", "12. 디바", "13. 아일릿", "14. 릴리", "15. 카리나", "16. 아이유", "17. 비치바디", "18. 모던키니", "19. 에스파", "34. 티아라"];
+          const productDocRef = doc(db, "AdminSettings", "productlist");
+          const productDocSnap = await getDoc(productDocRef);
+          const collections = productDocSnap.exists() ? Object.keys(productDocSnap.data().earing || {}) : [];
           
           let docRef;
           let found = false;

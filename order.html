@@ -73,12 +73,17 @@
       padding: 12px;
       border-radius: 8px;
       border: none;
-      background: #FF7BA9;
+      background: linear-gradient(45deg, #B8860B, #DAA520);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
       color: white;
       font-size: 14px;
       font-weight: 600;
       margin-top: 15px;
       cursor: pointer;
+    }
+    .btn.send {
+      background: #FEE500;
+      color: #000000;
     }
 
     .btn:active {
@@ -95,7 +100,7 @@
 <body>
   <div style="text-align: center; margin: 10px 0;">
     <a href="index.html">
-      <img src="pink_transparent.png" alt="로고" style="width: 150px;">
+      <img src="logo_gold.png" alt="로고" style="width: 150px;">
     </a>
   </div>
   <form id="orderForm">
@@ -107,7 +112,7 @@
 
       <div class="form-group">
         <label>■ 전화번호</label>
-        <input type="tel" id="phone" required pattern="[0-9]+" inputmode="tel">
+        <input type="tel" id="phone" required pattern="[0-9\-]+" placeholder="010-0000-0000" inputmode="tel">
       </div>
     </div>
 
@@ -186,9 +191,10 @@
       <div id="preview" style="font-size: 13px; white-space: pre-line; color: #333;"></div>
     </div>
 
-    <button type="button" id="sendKakao" class="btn" style="background-color: #FEE500; color: #000000;">알림톡 발송</button>
+    <button type="button" id="sendKakao" class="btn send" style="background-color: #FEE500; color: #000000;">알림톡 발송</button>
   </form>
 
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
   <script src="kakao.js" type="module"></script>
 
   <script type="module">
@@ -232,7 +238,8 @@
     }
 
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-    import { getFirestore, doc, setDoc, collection, getDocs, getDoc } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+    import { getFirestore, doc, setDoc, collection, getDocs, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+    import { saveOrderAndUploadToExcel } from './excel.js';
 
     const firebaseConfig = {
       apiKey: "AizaSyAxfXZ7fOgO4ZxffXp4fsAjAcTmMQrwuQ",
@@ -251,7 +258,7 @@
             const productDocRef = doc(db, "AdminSettings", "productlist");
             const productDocSnap = await getDoc(productDocRef);
             const earringSelect = document.getElementById('earrings');
-            
+
             if (productDocSnap.exists()) {
                 const earringData = productDocSnap.data().earing || {};
                 Object.entries(earringData).forEach(([id, name]) => {
@@ -273,7 +280,8 @@
       e.preventDefault();
 
       const customerName = document.getElementById('customerName').value;
-      const phone = document.getElementById('phone').value;
+      const phoneInput = document.getElementById('phone').value;
+      const phone = phoneInput.replace(/-/g, '');
       const shop = document.querySelector('input[name="shop"]:checked').value;
       const deliveryDate = document.getElementById('deliveryDate').value;
       const earrings = document.getElementById('earrings').value;
@@ -302,7 +310,8 @@
         "10_알림톡": {
           "1_주문완료안내": "",
           "2_상품발송안내": "",
-          "3_포토후기독려": ""
+          "3_포토후기독려": "",
+          "4_리뷰체험단": ""
         }
       };
 
@@ -322,18 +331,57 @@
           counter++;
         }
 
+        // Store docId in window object for kakao.js
+        window.docId = docId;
+
         await setDoc(doc(db, selectedOption, docId), {
           ...data,
           id: docId,
           created_at: today.toISOString()
         });
-        alert('주문이 저장되었습니다.');
 
-        // Disable submit button after successful save
+        // Save to Excel
+        const orderData = {
+          orderId: docId,
+          customerName,
+          customerContact: phone,
+          shop,
+          earrings: selectedOption,
+          earclip: document.querySelector('input[name="earclip"]').checked ? "변경" : "",
+          bracelet8: document.querySelector('input[name="bracelet"][value="8라인"]').checked ? "O" : "",
+          bracelet6: document.querySelector('input[name="bracelet"][value="6라인"]').checked ? "O" : "",
+          bracelet3: document.querySelector('input[name="bracelet"][value="3라인"]').checked ? "O" : "",
+          bracelet2: document.querySelector('input[name="bracelet"][value="2라인"]').checked ? "O" : "",
+          ring: document.querySelector('input[name="ring"]').checked ? "추가" : "",
+          review: document.querySelector('input[name="review"]').checked ? "참여" : "",
+          deliveryDate,
+          orderDate: today.toISOString(),
+          alimtalkOrder: data["10_알림톡"]["1_주문완료안내"] || "",
+          alimtalkDelivery: "",
+          alimtalkReview: ""
+        };
+
+        // Update save button text after successful save
         const saveButton = document.querySelector('button[type="submit"]');
         saveButton.disabled = true;
-        saveButton.textContent = '저장 완료';
-        saveButton.style.backgroundColor = '#cccccc';
+        saveButton.textContent = '저장 중...';
+
+        try {
+          // Remove alimtalk timestamp from initial save
+          const orderDataWithoutAlimtalk = {
+            ...orderData,
+            alimtalkOrder: "",
+          };
+          await saveOrderAndUploadToExcel(orderDataWithoutAlimtalk);
+          alert('주문이 저장되고 엑셀에 업로드되었습니다.');
+          saveButton.disabled = false;
+          saveButton.textContent = '저장 완료';
+        } catch (error) {
+          console.error('Excel 업로드 오류:', error);
+          alert('주문은 저장되었지만 엑셀 업로드에 실패했습니다.');
+          saveButton.disabled = false;
+          saveButton.textContent = '저장';
+        }
       } catch (error) {
         console.error('Error adding document: ', error);
         alert('저장 중 오류가 발생했습니다.');

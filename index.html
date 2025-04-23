@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" type="image/png" href="pink_transparent.png">
+  <link rel="icon" type="image/png" href="logo_gold.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>주문 관리 시스템</title>
   <style>
@@ -42,12 +42,13 @@
       padding: 15px;
       border-radius: 10px;
       border: none;
-      background: #FF7BA9;
+      background: linear-gradient(135deg, #FFD700, #B8860B, #DAA520);
       color: white;
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
       transition: 0.3s;
+      box-shadow: 0 2px 4px rgba(184, 134, 11, 0.5);
     }
 
     .btn:active {
@@ -58,10 +59,11 @@
 </head>
 <body>
   <div class="container">
-    <img src="pink_transparent.png" alt="로고" class="logo">
+    <img src="logo_gold.png" alt="로고" class="logo">
     <button class="btn" onclick="location.href='order.html'">주문완료</button>
     <button class="btn" onclick="location.href='post.html'">상품발송</button>
     <button class="btn" onclick="location.href='review.html'">포토후기</button>
+    <button class="btn" onclick="location.href='review-sns.html'">리뷰체험단</button>
   </div>
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';

@@ -49,7 +49,7 @@
 
     .search-btn {
       padding: 8px 15px;
-      background: #FF7BA9;
+      background: linear-gradient(135deg, #FFD700, #B8860B, #DAA520);
       color: white;
       border: none;
       border-radius: 6px;
@@ -62,7 +62,7 @@
       padding: 12px;
       border-radius: 8px;
       border: none;
-      background: #FF7BA9;
+      background: linear-gradient(135deg, #FFD700, #B8860B, #DAA520); /* Changed to gold */
       color: white;
       font-size: 14px;
       font-weight: 600;
@@ -89,12 +89,13 @@
       background: #f9f9f9;
     }
   </style>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 </head>
 
 <body>
   <div style="text-align: center; margin: 10px 0;">
     <a href="index.html">
-      <img src="pink_transparent.png" alt="로고" style="width: 150px;">
+      <img src="post.png" alt="로고" style="width: 150px;">
     </a>
   </div>
 
@@ -117,7 +118,7 @@
       <div style="flex: 1; display: flex; gap: 8px;">
         <div style="flex: 1;">
           <label>■ 전화번호</label>
-          <input type="tel" id="phone" required pattern="[0-9]+" inputmode="tel">
+          <input type="tel" id="phone" required pattern="[0-9\-]+" inputmode="tel">
         </div>
         <div style="flex: 1;">
           <label>■ 배송예정일</label>
@@ -145,7 +146,7 @@
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
     import { getFirestore, collection, query, where, getDocs, doc, updateDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-    
+
     const firebaseConfig = {
       apiKey: "AizaSyAxfXZ7fOgO4ZxffXp4fsAjAcTmMQrwuQ",
       authDomain: "fitgirlviki.firebaseapp.com",
@@ -172,7 +173,7 @@
       }) : ' #{배송예정일}';
 
       const previewText = `상품발송안내
-      
+
       '핏걸비키' 배송시작 안내
 ${customerData["01_고객명"]}님의 상품이 택배사로 전달되었습니다. (하트)
 
@@ -220,7 +221,8 @@ ${customerData["01_고객명"]}님의 상품이 택배사로 전달되었습니�
           currentDocId = matches[0].id;
           customerData = data;
           document.getElementById('docId').value = currentDocId;
-          document.getElementById('phone').value = data["02_전화번호"];
+          const phoneNum = data["02_전화번호"];
+          document.getElementById('phone').value = phoneNum.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
           document.getElementById('deliveryDate').value = data["09_배송예정일"] || '';
           document.getElementById('sendKakao').disabled = false;
           updatePreview();
@@ -234,7 +236,8 @@ ${customerData["01_고객명"]}님의 상품이 택배사로 전달되었습니�
     };
 
     window.searchByPhone = async () => {
-      const phone = document.getElementById('phone').value;
+      const phoneInput = document.getElementById('phone').value;
+      const phone = phoneInput.replace(/-/g, '');
       if (!phone) return;
 
       try {
@@ -299,25 +302,26 @@ ${customerData["01_고객명"]}님의 상품이 택배사로 전달되었습니�
           throw new Error("Document not found in any collection");
         }
 
-
         const deliveryDate = document.getElementById('deliveryDate').value;
         await updateDoc(docRef, {
-          "07_송장번호": trackingNumber,
-          "09_배송예정일": deliveryDate,
-          "10_알림톡.2_상품발송안내": new Date().toLocaleString('ko-KR', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-          }).replace(/\. /g, '-').replace('.', '')
+          "08_송장번호": trackingNumber,
+          "09_배송예정일": deliveryDate
         });
+
+        // Update Excel with tracking number
+        const { updateExcelRow } = await import('./excel.js');
+        const deliveryDateFormatted = deliveryDate.replace(/-/g, '').slice(2);
+
+        await updateExcelRow(String(currentDocId), {
+          "송장번호": trackingNumber,
+          "배송예정일": deliveryDateFormatted
+        });
+
+
+        document.getElementById('sendKakao').disabled = false;
         alert('송장번호가 저장되었습니다.');
         const submitButton = e.target.querySelector('button[type="submit"]');
-        submitButton.disabled = true;
         submitButton.textContent = '저장 완료';
-        submitButton.style.backgroundColor = '#cccccc';
       } catch (error) {
         console.error("Error updating tracking number:", error);
         alert('저장 중 오류가 발생했습니다.');
@@ -352,12 +356,10 @@ ${customerData["01_고객명"]}님의 상품이 택배사로 전달되었습니�
             'apikey': 'hqupt87di966drllinn2l96kb02hixeq',
             'userid': 'fitgirlviki',
             'senderkey': 'bf70d26201780aa1e02231f2b45c00a7f6421bbc',
-            'tpl_code': 'TZ_2886',
+            'tpl_code': 'TZ_4570',
             'sender': '01086871992',
             'receiver_1': customerData["02_전화번호"],
-            'subject_1': '상품발송안내',
-            'emtitle_1': `배송을
-            시작합니다`,
+            'subject_1': '상품배송을 시작합니다.',
             'message_1': `'핏걸비키' 배송시작 안내
 ${customerData["01_고객명"]}님의 상품이 택배사로 전달되었습니다(하트)
 
@@ -380,12 +382,58 @@ ${customerData["01_고객명"]}님의 상품이 택배사로 전달되었습니�
 
         const data = await response.json();
         if (data.code === 0) {
-          alert('알림톡이 발송되었습니다.');
-          const kakaoButton = document.getElementById('sendKakao');
-          kakaoButton.disabled = true;
-          kakaoButton.textContent = '발송 완료';
-          kakaoButton.style.backgroundColor = '#cccccc';
-          kakaoButton.style.color = '#666666';
+          const productDocRef = doc(db, "AdminSettings", "productlist");
+          const productDocSnap = await getDoc(productDocRef);
+          const collections = productDocSnap.exists() ? Object.values(productDocSnap.data().earing || {}) : [];
+
+          for (const colName of collections) {
+            const docRef = doc(db, colName, currentDocId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+              const date = new Date();
+              const year = date.getFullYear().toString().slice(-2);
+              const month = String(date.getMonth() + 1).padStart(2, '0');
+              const day = String(date.getDate()).padStart(2, '0');
+              const hour = String(date.getHours()).padStart(2, '0');
+              const minute = String(date.getMinutes()).padStart(2, '0');
+              const period = date.getHours() >= 12 ? 'PM' : 'AM';
+              const currentTime = `${year}${month}${day}_${period} ${hour}:${minute}`;
+              await updateDoc(docRef, {
+                "10_알림톡.2_상품발송안내": currentTime
+              });
+              break;
+            }
+          }
+
+          // Update Excel row with Kakao message time
+          const { updateExcelRow } = await import('./excel.js');
+          try {
+            const date = new Date();
+            const year = date.getFullYear().toString().slice(-2);
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hour = String(date.getHours()).padStart(2, '0');
+            const minute = String(date.getMinutes()).padStart(2, '0');
+            const period = date.getHours() >= 12 ? 'PM' : 'AM';
+            const currentTime = `${year}${month}${day}_${period} ${hour}:${minute}`;
+
+            console.log(`✅ ${currentDocId}`);
+            console.log(`✅ 발송 알림톡 전송 완료 - ${currentTime}`);
+            await updateExcelRow(String(currentDocId), {
+              "송장번호": trackingNumber,
+              "상품발송알림톡": currentTime
+            });
+
+            alert('알림톡이 발송되었습니다.');
+            const kakaoButton = document.getElementById('sendKakao');
+            kakaoButton.disabled = true;
+            kakaoButton.textContent = '발송 완료';
+            kakaoButton.style.backgroundColor = '#cccccc';
+            kakaoButton.style.color = '#666666';
+          } catch (error) {
+            console.error('Excel 업데이트 오류:', error);
+            alert('알림톡은 발송되었지만 Excel 업데이트에 실패했습니다.');
+          }
         } else {
           throw new Error(data.message);
         }

@@ -174,15 +174,77 @@
           return;
         }
 
-        if (matches.length === 1) {
+        if (matches.length > 1) {
+          // Create popup content
+          const popupContent = matches.map(doc => {
+            const data = doc.data();
+            return `
+              <div class="customer-option" style="padding: 10px; border-bottom: 1px solid #ddd; cursor: pointer;" 
+                   onclick="selectCustomer('${doc.id}', '${data["01_고객명"]}', '${data["02_전화번호"]}')">
+                <div>ID: ${doc.id}</div>
+                <div>전화번호: ${data["02_전화번호"]}</div>
+              </div>
+            `;
+          }).join('');
+
+          // Show popup
+          const popup = document.createElement('div');
+          popup.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            max-width: 90%;
+            width: 400px;
+          `;
+          
+          popup.innerHTML = `
+            <h3 style="margin-bottom: 15px;">동일한 이름의 고객이 여러 명 있습니다.</h3>
+            <div style="max-height: 300px; overflow-y: auto;">
+              ${popupContent}
+            </div>
+          `;
+
+          // Add overlay
+          const overlay = document.createElement('div');
+          overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+          `;
+
+          document.body.appendChild(overlay);
+          document.body.appendChild(popup);
+
+          // Define selectCustomer function
+          window.selectCustomer = (docId, name, phone) => {
+            currentDocId = docId;
+            customerData = matches.find(m => m.id === docId).data();
+            document.getElementById('docId').value = currentDocId;
+            document.getElementById('sendKakao').disabled = false;
+            updatePreview();
+            
+            // Remove popup and overlay
+            document.body.removeChild(popup);
+            document.body.removeChild(overlay);
+          };
+
+        } else if (matches.length === 1) {
           const data = matches[0].data();
           currentDocId = matches[0].id;
           customerData = data;
           document.getElementById('docId').value = currentDocId;
           document.getElementById('sendKakao').disabled = false;
           updatePreview();
-        } else {
-          alert('여러 고객이 검색되었습니다. 정확한 이름으로 다시 검색해주세요.');
         }
       } catch (error) {
         console.error("Error searching:", error);
